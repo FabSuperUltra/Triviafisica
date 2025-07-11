@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Trivia de Física</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Glacial+Indifference&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body {
+      font-family: 'Glacial Indifference', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      color: #636363;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #636363;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      background: #b9dfe1;
+      color: #636363;
+      margin: 10px 0;
+      padding: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-size: 16px;
+    }
+
+    .options li.correct {
+      background-color: #c8e6c9 !important;
+      color: #2e7d32;
+      font-weight: bold;
+      position: relative;
+    }
+
+    .options li.correct::after {
+      content: " 🙌";
+      font-size: 24px;
+      position: absolute;
+      right: 15px;
+      top: 8px;
+      animation: bounceIn 1s;
+    }
+
+    .options li.incorrect {
+      background-color: #ffcdd2 !important;
+      color: #c62828;
+    }
+
+    button {
+      padding: 12px 24px;
+      margin-top: 20px;
+      font-size: 16px;
+      border: none;
+      background-color: #636363;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:disabled {
+      background-color: #b9dfe1;
+      color: #888;
+      cursor: not-allowed;
+    }
+
+    .result {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 25px;
+      color: #636363;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container animate__animated animate__fadeIn">
+    <h2>Trivia de Física</h2>
+    <div id="quiz"></div>
+    <button id="nextBtn" disabled>Siguiente</button>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        question: "¿Cuál es la unidad de medida de la fuerza?",
+        options: ["Newton", "Watt", "Pascal", "Joule"],
+        answer: 0
+      },
+      {
+        question: "¿Qué científico formuló las leyes del movimiento?",
+        options: ["Galileo Galilei", "Isaac Newton", "Albert Einstein", "Niels Bohr"],
+        answer: 1
+      },
+      {
+        question: "¿Qué partícula tiene carga negativa?",
+        options: ["Protón", "Neutrón", "Electrón", "Fotón"],
+        answer: 2
+      },
+      {
+        question: "¿Cuál es la velocidad de la luz en el vacío?",
+        options: ["300,000 km/h", "150,000 m/s", "300,000 km/s", "3,000 m/s"],
+        answer: 2
+      },
+      {
+        question: "¿Qué ley describe la relación entre voltaje, corriente y resistencia?",
+        options: ["Ley de Coulomb", "Ley de Ohm", "Ley de Faraday", "Ley de Ampere"],
+        answer: 1
+      },
+      {
+        question: "¿Cuál es la fórmula de la energía cinética?",
+        options: ["mv", "mgh", "1/2mv²", "F·d"],
+        answer: 2
+      },
+      {
+        question: "¿Qué tipo de onda es la luz?",
+        options: ["Mecánica", "Electromagnética", "Longitudinal", "Transversal sonora"],
+        answer: 1
+      },
+      {
+        question: "¿Cuál es el nombre del aparato para medir la presión atmosférica?",
+        options: ["Barómetro", "Termómetro", "Higrómetro", "Altímetro"],
+        answer: 0
+      },
+      {
+        question: "¿Qué fenómeno explica la formación del arcoíris?",
+        options: ["Reflexión", "Refracción", "Difracción", "Interferencia"],
+        answer: 1
+      },
+      {
+        question: "¿Qué principio explica por qué flotan los barcos?",
+        options: ["Principio de Arquímedes", "Ley de Pascal", "Ley de Boyle", "Principio de Bernoulli"],
+        answer: 0
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const quiz = document.getElementById('quiz');
+    const nextBtn = document.getElementById('nextBtn');
+    const resultDiv = document.getElementById('result');
+
+    function loadQuestion() {
+      nextBtn.disabled = true;
+      const q = quizData[currentQuestion];
+      quiz.innerHTML = `
+        <div class="question"><strong>Pregunta ${currentQuestion + 1}:</strong> ${q.question}</div>
+        <ul class="options">
+          ${q.options.map((opt, i) => `<li onclick="selectOption(this, ${i})">${opt}</li>`).join('')}
+        </ul>
+      `;
+    }
+
+    function selectOption(el, selected) {
+      const q = quizData[currentQuestion];
+      const options = quiz.querySelectorAll("li");
+      options.forEach((opt, index) => {
+        opt.onclick = null;
+        if (index === q.answer) {
+          opt.classList.add("correct");
+        }
+        if (index === selected && index !== q.answer) {
+          opt.classList.add("incorrect");
+        }
+      });
+      if (selected === q.answer) {
+        score++;
+      }
+      nextBtn.disabled = false;
+    }
+
+    nextBtn.addEventListener("click", () => {
+      currentQuestion++;
+      if (currentQuestion < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      quiz.innerHTML = '';
+      nextBtn.style.display = "none";
+      let feedback = "";
+      if (score === 10) {
+        feedback = "¡Excelente! Tienes un conocimiento sobresaliente de física.";
+      } else if (score >= 7) {
+        feedback = "¡Muy bien! Tus conocimientos son sólidos.";
+      } else if (score >= 5) {
+        feedback = "Bien hecho, aunque puedes reforzar algunos temas.";
+      } else {
+        feedback = "Te sugerimos repasar los conceptos básicos de física.";
+      }
+      resultDiv.innerHTML = `Tu puntuación fue ${score} de 10.<br>${feedback}`;
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
